@@ -6,11 +6,30 @@ require_once "classes/html/form.php";
 class Html {
 
 	/**
-     * Creates a dasboard from an array like
+     * Creates a dashboard from an array like
      * (
-     *   ("one","two","three"),
-     * 	 ("hello","world","bla")
-     * )
+     *   "ModelClassName" => (
+	 *      "title" => "Tab title",
+	 *      "filters" => (
+	 *         "keyword_field" => "database_field",//What database field the keyword search filters the results by
+	 *         "select" => (//Optional pick list filters
+	 *           "database_field" => (
+	 *             "title" => "Filter title",
+	 *             "objects" => {},//Collection of DbObjects to fill pick list
+	 *           ),
+	 *           ...
+	 *         ),
+	 *      ),
+	 *      "fields" => (//List of fields you wish to be displayed
+	 *        "database_field" => (
+	 *           "title" => "Field title",
+	 *           "width" => "20%" //Optional column width
+	 *         ),
+	 *         ...
+	 *      ),
+     *   ),
+	 * ),
+	 * ...
      *
      * @param array $data array that defines the dashboard
      *
