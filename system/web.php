@@ -73,7 +73,7 @@ class Web {
         $this->_module = null;
         $this->_submodule = null;
         $this->_hooks = array();
-        $this->_webroot = "http://" . $_SERVER['HTTP_HOST'];
+        $this->_webroot = "//" . $_SERVER['HTTP_HOST'];
         $this->_actionMethod = null;
         
         $this->loadConfigurationFiles();

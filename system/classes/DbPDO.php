@@ -305,6 +305,13 @@ class DbPDO extends PDO {
         return $this->query->getColumnMeta($i);
     }
 
+	public function clearSelect() {
+		if (!empty($this->query) and is_a($this->query, "SelectQuery")) {
+			$this->query = $this->query->select(null);
+		}
+		return $this;
+	}
+	
     public function clear_sql(){
         // Clear everything
         if (!empty($this->query) and is_a($this->query, "PDOStatement")) {

@@ -74,6 +74,9 @@
 class DbObject extends DbService {
 
     public $id;
+	
+	private static $_object_vars = array();
+	private $_class;
 
     /**
      * Constructor
@@ -93,6 +96,7 @@ class DbObject extends DbService {
         if (property_exists($this, "_searchable") && !property_exists($this, "_remove_searchable")) {
             $this->_searchable = new AspectSearchable($this);
         }
+		$this->_class = get_class($this);
     }
 
     // public function __clone(){
@@ -278,7 +282,22 @@ class DbObject extends DbService {
         }
         return $v;
     }
-
+	
+	function getObjectVars() {
+		if(!empty(self::$_object_vars[$this->_class])) {
+			return self::$_object_vars[$this->_class];
+		}
+		// build cache of filtered object vars
+		self::$_object_vars[$this->_class] = array();
+		foreach(get_object_vars($this) as $k=>$v) {
+			// ignore volatile vars and web
+			if('_' !== $k{0} && $k !== 'w') {
+				self::$_object_vars[$this->_class][] = $k;
+			}
+		}
+		return self::$_object_vars[$this->_class];
+	}
+	
     /**
      * fill this object from an array where the keys correspond to the
      * variable of this object.
@@ -286,18 +305,11 @@ class DbObject extends DbService {
      * @param array $row
      */
     function fill($row, $from_db = false) {
-        foreach (get_object_vars($this) as $k => $v) {
-            if ($k{0} != "_") { // ignore volatile vars
-                $dbk = $k;
-                if ($from_db) {
-                    $dbk = $this->getDbColumnName($k);
-                }
-
-                if (array_key_exists($dbk, $row)) {
-                    $v = $row[$dbk];
-                    $this->$k = $from_db ? $this->readConvert($k, $v) : $v;
-                }
-            }
+        foreach ($this->getObjectVars() as $k) {
+			$dbk = $k;
+			if (!empty($row[$dbk])) {
+				$this->$k = $row[$dbk];
+			}
         }
         // May be modifiable data this will only fire if the keys below
         // aren't defined in the class
@@ -351,10 +363,8 @@ class DbObject extends DbService {
      */
     function toArray() {
         $arr = array();
-        foreach (get_object_vars($this) as $k => $v) {
-            if ($k{0} != "_" && $k != "w") { // ignore volatile vars
-                $arr[$k] = $v;
-            }
+        foreach ($this->getObjectVars() as $k) {
+			$arr[$k] = $this->$k;
         }
         return $arr;
     }
