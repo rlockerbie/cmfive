@@ -5,6 +5,64 @@ require_once "classes/html/form.php";
 
 class Html {
 
+	/**
+     * Creates a dasboard from an array like
+     * (
+     *   ("one","two","three"),
+     * 	 ("hello","world","bla")
+     * )
+     *
+     * @param array $data array that defines the dashboard
+     *
+     */
+	public static function dashboard($data) {
+		$menu = '<div id="cmfive_dashboard_event_tabs"><ul>';
+		$pages = '';
+		foreach($data as $class=>$setup) {
+			$menu .= '<li data-page="cmfive_event_page_'.$class.'" data-type="'.$class.'">'.$setup['title'].'</li>';
+			$pages .= '<div data-type="'.$class.'" data-titlefield="'.$setup['filters']['keyword_field'].'" id="cmfive_event_page_'.$class.'" style="display:none;" class="cmfive_dashboard_event_page">';
+			$pages .= '<div class="cmfive_event_filters">';
+			if(!empty($setup['filters']['select'])) {
+				$i = 1;
+				foreach($setup['filters']['select'] as $field=>$select) {
+					$pages .= '<div class="cmfive_event_filter"><div class="cmfive_event_filter_select"><select data-field="'.$field.'" data-color="tag_color_'.$i.'"><option value="null">'.$select['title'].'</option>';
+					foreach($select['objects'] as $o) {
+						$pages .= '<option value="'.$o->getSelectOptionValue().'">'.$o->getSelectOptionTitle().'</option>';
+					}
+					$pages .= '</select></div><div class="cmfive_event_filter_tags"></div><div class="clear"></div></div>';
+					$i++;
+				}
+			}
+			$pages .= '<div class="cmfive_event_filter"><div class="cmfive_event_keyword">Keyword Search: <input value="" type="text" title="Press enter to filter results" /> <button type="button" class="show-for-touch button round tiny">Search</button></div><div class="cmfive_event_filter_actions"><ul class="button-group radius"><li><button data-action="reset" class="small button" disabled="disabled">Reset</button></li><li><button data-action="undo" class="small button" disabled="disabled">Undo</button></li><li><button data-action="new" class="small button success">New</button></li></ul></div></div>';
+			$pages .= '</div><div class="cmfive_loading_overlay" style="display:none;"></div>';
+			$cols = '';
+			$header = '<thead><tr>';
+			$footer = '<tfoot><tr>';
+			foreach($setup['fields'] as $field=>$conf) {
+				if(!empty($conf['width'])) {
+					$cols .= '<col style="width:'.$conf['width'].';" />';
+				}
+				$header  .= '<th data-field="'.$field.'">'.$conf['title'].'</th>';
+				$footer  .= '<th>'.$conf['title'].'</th>';
+			}
+			$header .= '<th></th></tr></thead>';
+			$footer .= '<th></th></tr></tfoot>';
+			$pages .= '<table class="cmfive_event_page_table">';
+			if(!empty($cols)) {
+				$pages .= '<colgroup>'.$cols.'<col /></colgroup>';
+			}
+			$pages .= $header . '<tbody></tbody>' . $footer;
+			$pages .= '</table>';
+			$pages .= '</div>';
+		}
+		$menu .= '</ul><div class="clear"></div></div>';
+		$buffer = '<div id="cmfive_dashboard_events">';
+		$buffer .= $menu;
+		$buffer .= $pages;
+		$buffer .= '</div><script src="/system/templates/js/cmdashboard.js"></script>';
+		return $buffer;
+	}
+
     /**
      * Creates an html table from an array like
      * (
