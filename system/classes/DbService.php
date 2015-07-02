@@ -162,7 +162,7 @@ class DbService {
      * 
      * @return <type>
      */
-    function getObjects($class, $where = null, $cache_list = false, $use_cache = true, $order_by = null) {
+    function getObjects($class, $where = null, $cache_list = false, $use_cache = true, $order_by = null, $limit = null) {
         if (!$class)
             return null;
 
@@ -201,6 +201,9 @@ class DbService {
         }
         if (!empty($order_by)) {
             $this->_db->order_by($order_by);
+        }
+		if (!empty($limit)) {
+            $this->_db->limit($limit);
         }
 		$this->_db->clearSelect();
 		foreach ($o->getObjectVars() as $k) {

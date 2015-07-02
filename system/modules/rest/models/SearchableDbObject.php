@@ -149,12 +149,16 @@ class SearchableDbObject extends DbObject {
 			if (class_exists($class)) {
 				$o = new $class($this->w);
 				$q=$this->generateSearchQuery($where);
+				$limit = null;
+				if(!empty($q['limit'])) {
+					$limit = $q['limit'];
+				}
 				$where=$this->generateSQLQuery($q);
 				//echo $where;
 			}	
 			$order_by='';
 		}
-		return $this->getObjects($class,$where,$cache_list , $use_cache , $order_by );
+		return $this->getObjects($class,$where,$cache_list , $use_cache , $order_by, $limit);
 	}
 	
 	
