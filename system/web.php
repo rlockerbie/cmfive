@@ -22,7 +22,7 @@ class PermissionDeniedException extends Exception {
  * Author 2007 Carsten Eckelmann
  */
 class Web {
-
+	private $_cache = array();
     public $_buffer = null;
     public $_template = null;
     public $_templatePath;
@@ -206,7 +206,11 @@ class Web {
         
         // Store the sessions locally to avoid permission errors between OS's
         // I.e. on Windows by default tries to save to C:\Temp
-        session_save_path(getcwd() . DIRECTORY_SEPARATOR . "storage" . DIRECTORY_SEPARATOR . "session");
+		$sessionPath = getcwd() . DIRECTORY_SEPARATOR . "storage" . DIRECTORY_SEPARATOR . "session";
+		if(!is_dir($sessionPath)) {
+			mkdir($sessionPath, 0775, true);
+		}
+        session_save_path($sessionPath);
 
         session_start();
 
@@ -867,14 +871,18 @@ class Web {
     	if ($module == null) {
     		$module = $this->_module;
     	}
+		if(!empty($this->_cache[$module])) {
+			return $this->_cache[$module];
+		}
         // check for explicit module path first
         $basepath = $this->moduleConf($module, 'path');
         if (!empty($basepath)) {
             $path = $basepath . '/' . $module . '/';
-            return file_exists($path) ? $path : null;
-        }
-
-        return null;
+			$this->_cache[$module] = file_exists($path) ? $path : null;
+        } else {
+			$this->_cache[$module] = null;
+		}
+		return $this->_cache[$module];
     }
 
     function moduleUrl($module) {

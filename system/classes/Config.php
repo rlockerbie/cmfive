@@ -25,6 +25,7 @@ class Config {
     
     // Storage array
     private static $register = array();
+	private static $_cache = array();
     
     /**
      * This function will set a key in an array
@@ -58,22 +59,27 @@ class Config {
      * @return Mixed the value
      */
     public static function get($key) {
+		if(empty(self::$_cache['get_keys'])) {
+			self::$_cache['get_keys'] = array();
+		}
+		if(!empty(self::$_cache['get_keys'][$key])) {
+			return self::$_cache['get_keys'][$key];
+		}
         $exploded_key = explode('.', $key);
-        // Copy the register for processing
-        $value = self::$register;
-        if (!empty($exploded_key)) {
-            // Loop through each key
-            foreach($exploded_key as $ekey) {
-                if (array_key_exists(strtolower($ekey), $value)) {
-                    $value = $value[strtolower($ekey)];
-                } else {
-                    // Return null when we can't find a key
-                    return NULL;
-                }
-            }
-            return $value;
-        }
-        return NULL;
+		$register = &self::$register;
+		if (!empty($exploded_key)) {
+			if(array_key_exists($exploded_key[0], $register)) {
+				if(!isset($exploded_key[1]) == 1) {
+					self::$_cache['get_keys'][$key] = &$register[$exploded_key[0]];
+					return self::$_cache['get_keys'][$key];
+				}
+				if(array_key_exists($exploded_key[1], $register[$exploded_key[0]])) {
+					self::$_cache['get_keys'][$key] = &$register[$exploded_key[0]][$exploded_key[1]];
+					return self::$_cache['get_keys'][$key];
+				}
+			}
+		}
+		return NULL;
     }
     
     /**
@@ -85,13 +91,16 @@ class Config {
         if ($getAll === true) {
             return array_keys(self::$register);
         }
+		if(!empty(self::$_cache['keys'])) {
+			return self::$_cache['keys'];
+		}
         $required = array("topmenu", "active", "path");
         $req_count = count($required);
         $modules = array_filter(self::$register, function($var) use ($required, $req_count) {
             return ($req_count === count(array_intersect_key($var, array_flip($required))));
         });
-
-        return array_keys($modules);
+		self::$_cache['keys'] = array_keys($modules);
+        return self::$_cache['keys'];
     }
     
     /**
